@@ -20,7 +20,7 @@ services:
       dockerfile: web.dockerfile
     working_dir: /var/www/html/
     volumes_from:
-      - app
+      - application
     ports:
       - 8080:80
 
