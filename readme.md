@@ -1,4 +1,2 @@
-## A simple PHP + Laravel with custom "Hello World" greeting
-
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
-# php-helloworld
+# laravel-sampleapp
+Laravel sample "Hello World" project 
