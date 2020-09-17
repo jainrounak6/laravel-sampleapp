@@ -33,7 +33,7 @@ services:
       - "MYSQL_DATABASE=testdb"
       - "MYSQL_USER=test"
       - "MYSQL_PASSWORD=test123"
-  #   - "MYSQL_ROOT_PASSWORD=secret"
+      - "MYSQL_ROOT_PASSWORD=test123"
     ports:
         - "33061:3306"
 
