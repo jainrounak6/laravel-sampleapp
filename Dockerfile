@@ -45,6 +45,8 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             libmemcached11 \
             libmagickwand-dev \
             nginx=${NGINX_VERSION} \
+            mysql-client \
+            mysql-server \
             php7.2-fpm \
             php7.2-cli \
             php7.2-bcmath \
