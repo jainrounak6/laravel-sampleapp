@@ -110,7 +110,9 @@ ADD ./vhost.conf /etc/nginx/conf.d/default.conf
 
 # Add Scripts
 ADD ./start.sh /start.sh
+RUN chmod 777 /start.sh
 
 EXPOSE 80
+EXPOSE 3306
 
 CMD ["/start.sh"]
