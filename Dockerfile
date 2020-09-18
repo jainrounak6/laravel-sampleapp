@@ -13,7 +13,6 @@ ENV MYSQL_DATA_DIR=/var/lib/mysql
 ENV MYSQL_RUN_DIR=/run/mysqld 
 ENV MYSQL_LOG_DIR=/var/log/mysql
 ENV MYSQL_DATABASE=testdb
-# ENV MYSQL_USER=test
 ENV MYSQL_PASSWORD=test123
 ENV MYSQL_ROOT_PASSWORD=test123
 
@@ -39,8 +38,6 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" >> /etc/apt/sources.list \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
     && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
-#    && wget https://dev.mysql.com/get/mysql-apt-config_0.8.13-1_all.deb \
-#    && printf "1\n1\n4\n" | dpkg -i mysql-apt-config_0.8.13-1_all.deb \ 
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
             apt-utils \
@@ -91,12 +88,6 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${fpm_conf} \
     && sed -i -e "s/www-data/nginx/g" ${fpm_conf} \
     && sed -i -e "s/^;clear_env = no$/clear_env = no/" ${fpm_conf} \
-    # && echo "extension=redis.so" > /etc/php/7.2/mods-available/redis.ini \
-    # && echo "extension=memcached.so" > /etc/php/7.2/mods-available/memcached.ini \
-    # && ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/fpm/conf.d/20-redis.ini \
-    # && ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/cli/conf.d/20-redis.ini \
-    # && ln -sf /etc/php/7.2/mods-available/memcached.ini /etc/php/7.2/fpm/conf.d/20-memcached.ini \
-    # && ln -sf /etc/php/7.2/mods-available/memcached.ini /etc/php/7.2/cli/conf.d/20-memcached.ini \
     #### Install Composer
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
@@ -191,7 +182,7 @@ COPY docker-entrypoint.sh /usr/bin/
 RUN ln -s /usr/bin/docker-entrypoint.sh /entrypoint.sh  #backwards compat
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 
-##### Supervisor conf #####
+##### Supervisor conf
 ADD ./supervisord.conf /etc/supervisord.conf
 
 # Override nginx's default config
