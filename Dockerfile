@@ -137,12 +137,12 @@ RUN { \
 	} | debconf-set-selections \
 	&& apt-get update && apt-get install -y mysql-community-client="${MYSQL_VERSION}" mysql-community-server-core="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
 	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql /var/run/mysqld \
-	&& chown -R root:mysql /var/lib/mysql /var/run/mysqld \
+	&& chown -R root:root /var/lib/mysql /var/run/mysqld \
 # ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
 	&& chmod 1777 /var/run/mysqld /var/lib/mysql
 
 VOLUME /var/lib/mysql
-# Config files
+# Config files  
 COPY config/ /etc/mysql/
 COPY docker-entrypoint.sh /usr/bin/
 RUN ln -s usr/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
