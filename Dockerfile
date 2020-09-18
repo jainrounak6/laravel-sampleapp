@@ -8,6 +8,15 @@ ENV NGINX_VERSION 1.19.2-1~buster
 ENV php_conf /etc/php/7.2/fpm/php.ini
 ENV fpm_conf /etc/php/7.2/fpm/pool.d/www.conf
 ENV COMPOSER_VERSION 1.10.10
+ENV MYSQL_USER=test 
+ENV MYSQL_DATA_DIR=/var/lib/mysql 
+ENV MYSQL_RUN_DIR=/run/mysqld 
+ENV MYSQL_LOG_DIR=/var/log/mysql
+# ENV MYSQL_DATABASE=testdb
+# ENV MYSQL_USER=test
+# ENV MYSQL_PASSWORD=test123
+# ENV MYSQL_ROOT_PASSWORD=test123
+
 
 # Install Basic Requirements
 RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
@@ -45,8 +54,6 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             libmemcached11 \
             libmagickwand-dev \
             nginx=${NGINX_VERSION} \
-            mysql-client \
-            mysql-server \
             php7.2-fpm \
             php7.2-cli \
             php7.2-bcmath \
@@ -104,6 +111,12 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
+    # Install MySQL
+RUN  apt-get update \
+     && apt-get install --no-install-recommends --no-install-suggests -q -y \
+            mysql-server \
+            mysql-client  
+
 # Supervisor config
 ADD ./supervisord.conf /etc/supervisord.conf
 
@@ -113,8 +126,11 @@ ADD ./vhost.conf /etc/nginx/conf.d/default.conf
 # Add Scripts
 ADD ./start.sh /start.sh
 RUN chmod 777 /start.sh
+ADD ./entrypoint.sh /entrypoint.sh
+RUN chmod 777 /entrypoint.sh
 
 EXPOSE 80
 EXPOSE 3306
 
 CMD ["/start.sh"]
+CMD ["/entrypoint.sh"]
