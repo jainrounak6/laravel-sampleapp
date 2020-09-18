@@ -8,14 +8,13 @@ ENV NGINX_VERSION 1.19.2-1~buster
 ENV php_conf /etc/php/7.2/fpm/php.ini
 ENV fpm_conf /etc/php/7.2/fpm/pool.d/www.conf
 ENV COMPOSER_VERSION 1.10.10
-ENV MYSQL_USER=test 
+ENV MYSQL_USER=root 
 ENV MYSQL_DATA_DIR=/var/lib/mysql 
 ENV MYSQL_RUN_DIR=/run/mysqld 
 ENV MYSQL_LOG_DIR=/var/log/mysql
-# ENV MYSQL_DATABASE=testdb
-# ENV MYSQL_USER=test
-# ENV MYSQL_PASSWORD=test123
-# ENV MYSQL_ROOT_PASSWORD=test123
+ENV MYSQL_DATABASE=testdb
+ENV MYSQL_PASSWORD=test123
+ENV MYSQL_ROOT_PASSWORD=test123
 
 
 # Install Basic Requirements
@@ -39,8 +38,6 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" >> /etc/apt/sources.list \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
     && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
-    && wget https://dev.mysql.com/get/mysql-apt-config_0.8.13-1_all.deb \
-    && printf "1\n1\n4\n" | dpkg -i mysql-apt-config_0.8.13-1_all.deb \ 
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
             apt-utils \
@@ -72,7 +69,6 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             php7.2-intl \
             php7.2-xml \
             php-pear \
-    && pecl -d php_suffix=7.2 install -o -f redis memcached \
     && mkdir -p /run/php \
     && pip install wheel \
     && pip install supervisor supervisor-stdout \
@@ -92,13 +88,7 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${fpm_conf} \
     && sed -i -e "s/www-data/nginx/g" ${fpm_conf} \
     && sed -i -e "s/^;clear_env = no$/clear_env = no/" ${fpm_conf} \
-    && echo "extension=redis.so" > /etc/php/7.2/mods-available/redis.ini \
-    && echo "extension=memcached.so" > /etc/php/7.2/mods-available/memcached.ini \
-    && ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/fpm/conf.d/20-redis.ini \
-    && ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/cli/conf.d/20-redis.ini \
-    && ln -sf /etc/php/7.2/mods-available/memcached.ini /etc/php/7.2/fpm/conf.d/20-memcached.ini \
-    && ln -sf /etc/php/7.2/mods-available/memcached.ini /etc/php/7.2/cli/conf.d/20-memcached.ini \
-    # Install Composer
+    #### Install Composer
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
     && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
@@ -111,13 +101,88 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-    # Install MySQL
-RUN  apt-get update \
-     && apt-get install --no-install-recommends --no-install-suggests -q -y \
-            mysql-server \
-            mysql-client  
+    ###### Install MySQL and Setup ######
+RUN groupadd -r mysql && useradd -r -g mysql mysql
 
-# Supervisor config
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && rm -rf /var/lib/apt/lists/*
+
+# add gosu for easy step-down from root
+# https://github.com/tianon/gosu/releases
+ENV GOSU_VERSION 1.12
+RUN set -eux; \
+	savedAptMark="$(apt-mark showmanual)"; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends ca-certificates wget; \
+	rm -rf /var/lib/apt/lists/*; \
+	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
+	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
+	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+	gpgconf --kill all; \
+	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+	apt-mark auto '.*' > /dev/null; \
+	[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark > /dev/null; \
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	chmod +x /usr/local/bin/gosu; \
+	gosu --version; \
+	gosu nobody true
+
+RUN mkdir /docker-entrypoint-initdb.d
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+# for MYSQL_RANDOM_ROOT_PASSWORD
+		pwgen \
+# for mysql_ssl_rsa_setup
+		openssl \
+# FATAL ERROR: please install the following Perl modules before executing /usr/local/mysql/scripts/mysql_install_db:
+# File::Basename
+# File::Copy
+# Sys::Hostname
+# Data::Dumper
+		perl \
+# install "xz-utils" for .sql.xz docker-entrypoint-initdb.d files
+		xz-utils \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN set -ex; \
+# gpg: key 5072E1F5: public key "MySQL Release Engineering <mysql-build@oss.oracle.com>" imported
+	key='A4A9406876FCBD3C456770C88C718D3B5072E1F5'; \
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+	gpg --batch --export "$key" > /etc/apt/trusted.gpg.d/mysql.gpg; \
+	gpgconf --kill all; \
+	rm -rf "$GNUPGHOME"; \
+	apt-key list > /dev/null
+
+ENV MYSQL_MAJOR 8.0
+ENV MYSQL_VERSION 8.0.21-1debian10
+
+RUN echo "deb http://repo.mysql.com/apt/debian/ buster mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+
+# the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
+# also, we set debconf keys to make APT a little quieter
+RUN { \
+		echo mysql-community-server mysql-community-server/data-dir select '${MYSQL_DATA_DIR}'; \
+		echo mysql-community-server mysql-community-server/root-pass password '${MYSQL_ROOT_PASSWORD}'; \
+		echo mysql-community-server mysql-community-server/re-root-pass password '${MYSQL_ROOT_PASSWORD}'; \
+		echo mysql-community-server mysql-community-server/remove-test-db select false; \
+	} | debconf-set-selections \
+	&& apt-get update && apt-get install -y mysql-community-client="${MYSQL_VERSION}" mysql-community-server-core="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
+	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql /var/run/mysqld \
+	&& chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
+# ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
+	&& chmod 1777 /var/run/mysqld /var/lib/mysql
+
+VOLUME /var/lib/mysql
+# Config files
+COPY config/ /etc/mysql/
+COPY docker-entrypoint.sh /usr/bin/
+RUN ln -s /usr/bin/docker-entrypoint.sh /entrypoint.sh  #backwards compat
+ENTRYPOINT [ "docker-entrypoint.sh" ]
+
+##### Supervisor conf
 ADD ./supervisord.conf /etc/supervisord.conf
 
 # Override nginx's default config
@@ -126,11 +191,11 @@ ADD ./vhost.conf /etc/nginx/conf.d/default.conf
 # Add Scripts
 ADD ./start.sh /start.sh
 RUN chmod 777 /start.sh
-ADD ./entrypoint.sh /entrypoint.sh
-RUN chmod 777 /entrypoint.sh
+ADD ./docker-entrypoint.sh /entrypoint.sh
+RUN chmod 777 /usr/bin/docker-entrypoint.sh
 
-EXPOSE 80
-EXPOSE 3306
+EXPOSE 80 3306
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/start.sh"]
-CMD ["/entrypoint.sh"]
+CMD ["mysqld"]

@@ -17,7 +17,7 @@ MYSQL_COLLATION=${MYSQL_COLLATION:-"utf8_unicode_ci"}
 create_data_dir() {
   mkdir -p ${MYSQL_DATA_DIR}
   chmod -R 0700 ${MYSQL_DATA_DIR}
-  chown -R ${MYSQL_USER}:${MYSQL_USER} ${MYSQL_DATA_DIR}
+  chown -R ${MYSQL_USER}:root ${MYSQL_DATA_DIR}
 }
 
 create_run_dir() {
@@ -32,7 +32,7 @@ create_run_dir() {
 create_log_dir() {
   mkdir -p ${MYSQL_LOG_DIR}
   chmod -R 0755 ${MYSQL_LOG_DIR}
-  chown -R ${MYSQL_USER}:${MYSQL_USER} ${MYSQL_LOG_DIR}
+  chown -R ${MYSQL_USER}:root ${MYSQL_LOG_DIR}
 }
 
 listen() {

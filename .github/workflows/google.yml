@@ -13,7 +13,8 @@ name: Test Build and Deploy to GKE
 on:
   push:
     branches:
-    - dev
+    #- dev
+     - mysql 
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
