@@ -1,4 +1,4 @@
-                                #### Techflitter Solutions ####
+                                          #### Techflitter Solutions ####
 
 # This workflow will build a docker container, publish it to Google Container Registry (Asia region), and deploy it to GKE when code is pushed to master branch.
 #
@@ -39,17 +39,13 @@ jobs:
             run: php -r "file_exists('.env') || copy('.env.example', '.env');"
           - name: Install Composer Dependencies
             run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
-          - name: Install NPM Dependencies
-            run: npm install
           - name: Generate Key
             run: php artisan key:generate
           - name: Execute tests (Unit and Feature tests) via PHPUnit
             env:
               DB_PORT: ${{ job.services.mysql.ports[3306] }}
-            run: vendor/bin/phpunit
-          - name: Execute tests (Unit and Feature tests) via JEST
-            run: node_modules/.bin/jest
-              
+            run: vendor/bin/phpunit tests/ 
+                        
   publish-deploy:
     name: Publish, and Deploy
     runs-on: ubuntu-latest
