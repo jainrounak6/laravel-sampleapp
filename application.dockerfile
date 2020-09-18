@@ -9,6 +9,6 @@ RUN docker-php-ext-install pdo_mysql
 
 # Install Composer
 RUN curl --silent --show-error https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --dry-run
-RUN composer dump-autoload
-RUN composer update --dry-run
+#RUN composer install --dry-run
+#RUN composer dump-autoload
+#RUN composer update --dry-run
