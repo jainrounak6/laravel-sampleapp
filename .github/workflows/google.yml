@@ -84,14 +84,14 @@ jobs:
       run: |-
         docker push "asia.gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
         
-    - name: Create container
-      run: |-
-        gcloud container clusters create "$GKE_CLUSTER" \
-        --zone europe-west2 \
-        --num-nodes 1 \
-        --machine-type n1-standard-2 \
-        --cluster-version 1.15 \
-        --service-account "$service_account_key"
+#     - name: Create container
+#       run: |-
+#         gcloud container clusters create "$GKE_CLUSTER" \
+#         --zone europe-west2 \
+#         --num-nodes 1 \
+#         --machine-type n1-standard-2 \
+#         --cluster-version 1.15 \
+#         --service-account "$service_account_key"
          
      # Get the GKE credentials so we can deploy to the cluster
     - name: container creds 
