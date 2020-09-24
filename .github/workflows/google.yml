@@ -18,9 +18,9 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: cluster-1         # TODO: update to cluster name
-  GKE_ZONE: asia-south1        # TODO: update to cluster zone
-  DEPLOYMENT_NAME: gke-test      # TODO: update to deployment name
+  GKE_CLUSTER: static-site-laravel         # TODO: update to cluster name
+  GKE_ZONE: asia-south1                    # TODO: update to cluster zone
+  DEPLOYMENT_NAME: gke-test                # TODO: update to deployment name
   IMAGE: static-site
 
 jobs:
@@ -83,6 +83,19 @@ jobs:
     - name: Publish
       run: |-
         docker push "asia.gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
+        
+    - name: Create container
+      run: |-
+        gcloud container clusters create "$GKE_CLUSTER" \
+        --num-nodes 2 \
+        --machine-type n1-standard-2 \
+        --cluster-version 1.15 \
+        --service-account "$service_account_key"
+         
+     # Get the GKE credentials so we can deploy to the cluster
+    - name: container creds 
+      run: |-
+        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"       
 
     # Set up kustomize
     - name: Set up Kustomize
