@@ -16,11 +16,12 @@ spec:
     spec:
       containers:
       - name: gke-test
-        image: asia.gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+        image: static-site-laravel:latest
+        #image: asia.gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA
         ports:
         - containerPort: 8000
         resources:
           requests:
-            cpu: 100m
+            cpu: 1024m
           limits:
             cpu: 100m
