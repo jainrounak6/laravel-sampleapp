@@ -1,5 +1,5 @@
-FROM debian:buster
-
+#FROM debian:buster
+FROM ubuntu:bionic
 LABEL maintainer="ROUNAK JAIN"
 
 # Let the container know that there is no tty
@@ -35,9 +35,12 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
 		  apt-key adv --batch --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
 	  done; \
     test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-    echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" >> /etc/apt/sources.list \
+    echo "deb http://nginx.org/packages/mainline/ubuntu/ bionic nginx" >> /etc/apt/sources.list \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
-    && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
+#    && wget "deb http://ftp.iitm.ac.in/ubuntu/ bionic main" > /etc/apt/sources.list \
+#    && wget "deb-src http://ftp.iitm.ac.in/ubuntu/ bionic main" > /etc/apt/sources.list \
+    && echo "deb http://archive.ubuntu.com/ bionic main universe multiverse restricted" > /etc/apt/sources.list \
+   # && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
             apt-utils \
@@ -159,7 +162,7 @@ RUN set -ex; \
 ENV MYSQL_MAJOR 8.0
 ENV MYSQL_VERSION 8.0.21-1debian10
 
-RUN echo "deb http://repo.mysql.com/apt/debian/ buster mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
+RUN echo "deb http://repo.mysql.com/apt/debian/ buster mysql" > /etc/apt/sources.list.d/mysql.list
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
@@ -169,7 +172,7 @@ RUN { \
 		echo mysql-community-server mysql-community-server/re-root-pass password '${MYSQL_ROOT_PASSWORD}'; \
 		echo mysql-community-server mysql-community-server/remove-test-db select false; \
 	} | debconf-set-selections \
-	&& apt-get update && apt-get install -y mysql-community-client="${MYSQL_VERSION}" mysql-community-server-core="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
+	&& apt-get update && apt-get install -y  mysql-server* && rm -rf /var/lib/apt/lists/* \
 	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql /var/run/mysqld \
 	&& chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
 # ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
@@ -196,6 +199,6 @@ RUN chmod 777 /usr/bin/docker-entrypoint.sh
 
 EXPOSE 80 3306
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+#ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/start.sh"]
-CMD ["mysqld"]
+#CMD ["mysqld"]
