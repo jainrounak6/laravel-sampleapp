@@ -198,9 +198,14 @@ ADD ./start.sh /start.sh
 RUN chmod 777 /start.sh
 ADD ./docker-entrypoint.sh /entrypoint.sh
 RUN chmod 777 /usr/local/bin/docker-entrypoint.sh
+RUN mkdir -p /var/www/html
+ADD . /var/www/html
+WORKDIR /var/www/html
+RUN composer install
 
 EXPOSE 80 3306 33060
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["/start.sh"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+#CMD ["/start.sh"]
 CMD ["mysqld"]
