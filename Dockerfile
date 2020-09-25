@@ -1,5 +1,5 @@
-#FROM debian:buster
-FROM ubuntu:bionic
+FROM debian:buster
+
 LABEL maintainer="ROUNAK JAIN"
 
 # Let the container know that there is no tty
@@ -8,7 +8,7 @@ ENV NGINX_VERSION 1.19.2-1~buster
 ENV php_conf /etc/php/7.2/fpm/php.ini
 ENV fpm_conf /etc/php/7.2/fpm/pool.d/www.conf
 ENV COMPOSER_VERSION 1.10.10
-ENV MYSQL_USER=root 
+ENV MYSQL_USER=testuser 
 ENV MYSQL_DATA_DIR=/var/lib/mysql 
 ENV MYSQL_RUN_DIR=/run/mysqld 
 ENV MYSQL_LOG_DIR=/var/log/mysql
@@ -35,12 +35,9 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
 		  apt-key adv --batch --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
 	  done; \
     test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-    echo "deb http://nginx.org/packages/mainline/ubuntu/ bionic nginx" >> /etc/apt/sources.list \
+    echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" >> /etc/apt/sources.list \
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
-#    && wget "deb http://ftp.iitm.ac.in/ubuntu/ bionic main" > /etc/apt/sources.list \
-#    && wget "deb-src http://ftp.iitm.ac.in/ubuntu/ bionic main" > /etc/apt/sources.list \
-    && echo "deb http://archive.ubuntu.com/ bionic main universe multiverse restricted" > /etc/apt/sources.list \
-   # && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
+    && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
             apt-utils \
@@ -159,10 +156,10 @@ RUN set -ex; \
 	rm -rf "$GNUPGHOME"; \
 	apt-key list > /dev/null
 
-ENV MYSQL_MAJOR 8.0
-ENV MYSQL_VERSION 8.0.21-1debian10
+ENV MYSQL_MAJOR 5.7
+ENV MYSQL_VERSION 5.7.31-1debian10
 
-RUN echo "deb http://repo.mysql.com/apt/debian/ buster mysql" > /etc/apt/sources.list.d/mysql.list
+RUN echo "deb http://repo.mysql.com/apt/debian/ buster mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
 # the "/var/lib/mysql" stuff here is because the mysql-server postinst doesn't have an explicit way to disable the mysql_install_db codepath besides having a database already "configured" (ie, stuff in /var/lib/mysql/mysql)
 # also, we set debconf keys to make APT a little quieter
@@ -172,18 +169,23 @@ RUN { \
 		echo mysql-community-server mysql-community-server/re-root-pass password '${MYSQL_ROOT_PASSWORD}'; \
 		echo mysql-community-server mysql-community-server/remove-test-db select false; \
 	} | debconf-set-selections \
-	&& apt-get update && apt-get install -y  mysql-server* && rm -rf /var/lib/apt/lists/* \
+	&& apt-get update && apt-get install -y mysql-server="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
 	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql /var/run/mysqld \
 	&& chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
 # ensure that /var/run/mysqld (used for socket and lock files) is writable regardless of the UID our mysqld instance ends up having at runtime
-	&& chmod 1777 /var/run/mysqld /var/lib/mysql
+	&& chmod 1777 /var/run/mysqld /var/lib/mysql \
+# comment out a few problematic configuration values
+	&& find /etc/mysql/ -name '*.cnf' -print0 \
+		| xargs -0 grep -lZE '^(bind-address|log)' \
+		| xargs -rt -0 sed -Ei 's/^(bind-address|log)/#&/' \
+# don't reverse lookup hostnames, they are usually another container
+	&& echo '[mysqld]\nskip-host-cache\nskip-name-resolve' > /etc/mysql/conf.d/docker.cnf
 
 VOLUME /var/lib/mysql
-# Config files
-COPY config/ /etc/mysql/
-COPY docker-entrypoint.sh /usr/bin/
-RUN ln -s /usr/bin/docker-entrypoint.sh /entrypoint.sh  #backwards compat
-ENTRYPOINT [ "docker-entrypoint.sh" ]
+
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 ##### Supervisor conf
 ADD ./supervisord.conf /etc/supervisord.conf
@@ -195,10 +197,10 @@ ADD ./vhost.conf /etc/nginx/conf.d/default.conf
 ADD ./start.sh /start.sh
 RUN chmod 777 /start.sh
 ADD ./docker-entrypoint.sh /entrypoint.sh
-RUN chmod 777 /usr/bin/docker-entrypoint.sh
+RUN chmod 777 /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 80 3306
+EXPOSE 80 3306 33060
 
-#ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["/start.sh"]
-#CMD ["mysqld"]
+CMD ["mysqld"]
