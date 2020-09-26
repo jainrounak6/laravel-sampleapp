@@ -200,6 +200,7 @@ RUN chmod 777 /usr/local/bin/docker-entrypoint.sh
 RUN mkdir -p /var/www/html
 ADD . /var/www/html
 WORKDIR /var/www/html
+RUN cp .env.example .env
 RUN composer install
 
 EXPOSE 80 3306 33060
