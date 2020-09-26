@@ -1,4 +1,12 @@
 #!/bin/bash
+MYSQL_USER=testuser
+MYSQL_DATA_DIR=/var/lib/mysql
+MYSQL_RUN_DIR=/run/mysqld
+MYSQL_LOG_DIR=/var/log/mysql
+MYSQL_DATABASE=testdb
+MYSQL_PASSWORD=test123
+MYSQL_ROOT_PASSWORD=test123
+
 set -eo pipefail
 shopt -s nullglob
 

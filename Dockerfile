@@ -185,7 +185,7 @@ VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
-ENTRYPOINT ["docker-entrypoint.sh"]
+#ENTRYPOINT ["docker-entrypoint.sh"]
 
 ##### Supervisor conf
 ADD ./supervisord.conf /etc/supervisord.conf
@@ -201,11 +201,12 @@ RUN chmod 777 /usr/local/bin/docker-entrypoint.sh
 RUN mkdir -p /var/www/html
 ADD . /var/www/html
 WORKDIR /var/www/html
+RUN cp .env.example .env
 RUN composer install
 
 EXPOSE 80 3306 33060
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
-#CMD ["/start.sh"]
+#ENTRYPOINT ["docker-entrypoint.sh"]
+#CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["/start.sh"]
 CMD ["mysqld"]
