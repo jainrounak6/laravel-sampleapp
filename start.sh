@@ -11,6 +11,9 @@ MYSQL_DATABASE=testdb
 
 docker-entrypoint.sh
 service mysql start
+chown -R www-data:root /var/www/html
+chcon -R -t httpd_sys_rw_content_t /var/www/html
+chmod -R 777 /var/www/html
 mysql -e "CREATE DATABASE $MYSQL_DATABASE;CREATE USER $MYSQL_USER@localhost identified by '$MYSQL_PASSWORD';GRANT ALL ON $MYSQL_DATABASE.* to $MYSQL_USER@localhost WITH GRANT OPTION; FLUSH PRIVILEGES;"
 php artisan key:generate
 php artisan storage:link
