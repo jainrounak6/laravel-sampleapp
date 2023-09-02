@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: laravel-app
+        image: laravel-php:8.2
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: DB_CONNECTION
+            value: mysql
+          - name: DB_HOST
+            value: mysql-service
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_DATABASE
+            value: laravel
+          - name: DB_USERNAME
+            value: laravel
+          - name: DB_PASSWORD
+            value: laravel
+          - name: APP_KEY
+            value: "base64:96VAhksu++QGhaUWBtCWUSNEkwqeJMA1YHh7h41HpS0="
+        resources: {}
+        ports:
+        - name: php
+          containerPort: 9000
