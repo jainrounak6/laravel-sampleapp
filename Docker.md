@@ -54,6 +54,11 @@ Run the Laravel application along with the required services/containers using th
 docker-compose --env-file .env.docker.dev up --build
 ```
 
+For Prod environment
+```
+docker-compose -f docker-compose-prod.yml --env-file .env.docker.prod build
+```
+
 ### Step 3 - App configuration
 Update the database configuration in your Laravel .env file:
 
