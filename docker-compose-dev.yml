@@ -73,7 +73,7 @@ services:
     environment:
       PMA_ARBITRARY: 1
       PMA_HOST: mysql
-      PMA_ABSOLUTE_URI: /phpmyadmin/
+      PMA_ABSOLUTE_URI: /phpmyadmin
       PMA_USER: root
       PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       UPLOAD_LIMIT: 100M
@@ -83,7 +83,7 @@ services:
     networks:
       - app
     links:
-      - mysql
+      - mysql:db
 
   # MailPit Service
   mails:
