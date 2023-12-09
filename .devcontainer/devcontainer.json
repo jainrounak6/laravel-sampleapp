@@ -1,0 +1,62 @@
+// .devcontainer/devcontainer.json
+{
+	"name": "PHP/Laravel Development",
+	"dockerComposeFile": "../docker-compose-dev.yml",
+    "service": "app",
+    "workspaceFolder": "/var/www/html",
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"settings": {
+				"terminal.integrated.shell.linux": "/bin/bash",
+				"files.trimTrailingWhitespace": true,
+				"workbench.iconTheme": "vscode-icons",
+				"editor.formatOnSave": true,
+				"files.insertFinalNewline": true,
+				"diffEditor.ignoreTrimWhitespace": false
+			},
+			"extensions": [
+				"mikestead.dotenv",
+				"vscode-icons-team.vscode-icons",
+				"redhat.vscode-yaml",
+				"eamodio.gitlens",
+				"bmewburn.vscode-intelephense-client",
+				"felixfbecker.php-debug",
+				"xdebug.php-debug",
+				"onecentlin.laravel-blade",
+				"codingyu.laravel-goto-view",
+				"ryannaddy.laravel-artisan",
+				"onecentlin.laravel5-snippets",
+				"streetsidesoftware.code-spell-checker",
+				"austenc.laravel-docs",
+				"junstyle.php-cs-fixer",
+				"esbenp.prettier-vscode",
+				"ms-vscode-remote.remote-containers",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode-remote.remote-ssh",
+				"ms-vscode.remote-explorer"
+			]
+		}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		// 9000,
+		// 3306,
+		// 1025,
+		// 8025
+	]
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. More info: https://code.visualstudio.com/docs/remote/devcontainerjson-reference.
+	// "portsAttributes": {
+	// 	"8000": {
+	// 		"label": "Hello Remote World",
+	// 		"onAutoForward": "notify"
+	// 	}
+	// }
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
