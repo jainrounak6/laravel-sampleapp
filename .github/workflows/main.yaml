@@ -16,7 +16,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
-          image-ref: "https://hub.docker.com/jainrounak6/laravel-sampleapp:app"
+          image-ref: "jainrounak6/laravel-sampleapp:app"
           format: "template"
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
