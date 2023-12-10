@@ -23,3 +23,12 @@
 
 ### Map Minikube IP with domain for local
 `echo "$(minikube ip) myapp.local" | sudo tee -a /etc/hosts`
+
+
+### Access Application
+
+Once application is deployed to access the laravel application run below command:
+
+`kubectl port-forward service/nginx-service 8080:80`
+
+the reason to port forward is load balancer is not available on local system so we use above method to access application.
