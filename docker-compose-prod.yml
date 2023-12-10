@@ -7,7 +7,7 @@ services:
       dockerfile: ./docker/php/Prod.Dockerfile
       args:
         - PHP_VERSION=${PHP_VERSION:-8.2}
-        - NODE_VERSION=${NODE_VERSION:-18}
+        - NODE_VERSION=${NODE_VERSION:-16}
     image: jainrounak6/laravel-sampleapp:app
     container_name: ${COMPOSE_PROJECT_NAME:-laravel}-app
     restart: unless-stopped
