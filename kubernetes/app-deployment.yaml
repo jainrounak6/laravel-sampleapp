@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: laravel-app
-        image: laravel-php:8.2
+        # image: laravel-php:8.2
+        image: jainrounak6/laravel-sampleapp:app
         imagePullPolicy: IfNotPresent
         env:
           - name: DB_CONNECTION

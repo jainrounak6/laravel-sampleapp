@@ -8,7 +8,7 @@ services:
       args:
         - PHP_VERSION=${PHP_VERSION:-latest}
         - NODE_VERSION=${NODE_VERSION:-latest}
-    image: ${COMPOSE_PROJECT_NAME}-php:${PHP_VERSION:-latest}
+    image: jainrounak6/laravel-sampleapp:app
     container_name: ${COMPOSE_PROJECT_NAME}-app
     restart: unless-stopped
     tty: true

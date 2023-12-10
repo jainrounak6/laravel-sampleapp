@@ -14,18 +14,17 @@ spec:
     spec:
       containers:
       - name: laravel-queue-worker
-        image: laravel-php:8.2
+        # image: laravel-php:8.2
+        image: jainrounak6/laravel-sampleapp:app
         imagePullPolicy: IfNotPresent
-        command: ["/bin/sh","-c"]
-        args: ["composer install; php artisan queue:work database"]
-        # command:
-        #   - php
-        # args:
-        #   - artisan
-        #   - queue:work
-        #   - database
-        #   - --tries=3 #Laravel default value for retry job
-        #   # - --max-jobs=200
+        command:
+          - php
+        args:
+          - artisan
+          - queue:work
+          - database
+          - --tries=3 #Laravel default value for retry job
+          # - --max-jobs=200
         resources: {}
         env:
           - name: QUEUE_CONNECTION

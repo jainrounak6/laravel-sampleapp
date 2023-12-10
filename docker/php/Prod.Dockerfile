@@ -43,7 +43,7 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 
 #  Install php extensions
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions zip gd pdo_mysql exif memcached mysqli opcache curl intl imap mcrypt memcache pspell sockets mbstring
+    install-php-extensions zip gd pdo_mysql exif memcached mysqli opcache curl intl imap mcrypt memcache pspell imagick redis sockets mbstring
 # imagick
 
 # Supervisor configuration
@@ -64,8 +64,12 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html/
 
+RUN composer install
+RUN npm install
+RUN npm run build
+
 # EntryPoint
-# ENTRYPOINT ["./docker/php/start.sh"]
+ENTRYPOINT ["./docker/php/start.sh"]
 
 # CMD ["php-fpm"]
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/app-queue.conf"]
+# CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/app-queue.conf"]
