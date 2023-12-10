@@ -6,7 +6,10 @@ LABEL maintainer="ROUNAK JAIN"
 ARG NODE_VERSION="latest"
 
 #Node configuration
-RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash -
+# RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash -
+RUN curl -SLO https://deb.nodesource.com/nsolid_setup_deb.sh && \
+    chmod 500 nsolid_setup_deb.sh && \
+    ./nsolid_setup_deb.sh $NODE_VERSION
 
 # Install dependencies
 RUN apt-get update && apt-get install -y -o 'Acquire::Retries=3' \
@@ -34,7 +37,6 @@ RUN apt-get update && apt-get install -y -o 'Acquire::Retries=3' \
     curl \
     cron \
     nodejs \
-    npm \
     supervisor
 
 # Add docker php ext repo
