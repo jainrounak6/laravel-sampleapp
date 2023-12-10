@@ -66,7 +66,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html/
 
 RUN composer install --no-dev && \
-    npm ci --no-dev && \
+    npm ci && \
     npm run build
 
 # EntryPoint
