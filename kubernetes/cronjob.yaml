@@ -10,15 +10,14 @@ spec:
         spec:
           containers:
           - name: laravel-scheduler
-            image: laravel-php:8.2
+            # image: laravel-php:8.2
+            image: jainrounak6/laravel-sampleapp:app
             imagePullPolicy: IfNotPresent
-            command: ["/bin/sh","-c"]
-            args: ["composer install; php artisan schedule:run"]
-            # command:
-            #   - php
-            # args:
-            #   - artisan
-            #   - schedule:run
+            command:
+              - php
+            args:
+              - artisan
+              - schedule:run
             env:
               - name: APP_ENV
                 value: production
