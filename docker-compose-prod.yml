@@ -6,10 +6,10 @@ services:
       context: .
       dockerfile: ./docker/php/Prod.Dockerfile
       args:
-        - PHP_VERSION=${PHP_VERSION:-latest}
-        - NODE_VERSION=${NODE_VERSION:-latest}
+        - PHP_VERSION=${PHP_VERSION:-8.2}
+        - NODE_VERSION=${NODE_VERSION:-18}
     image: jainrounak6/laravel-sampleapp:app
-    container_name: ${COMPOSE_PROJECT_NAME}-app
+    container_name: ${COMPOSE_PROJECT_NAME:-laravel}-app
     restart: unless-stopped
     tty: true
     working_dir: /var/www/html
@@ -22,12 +22,12 @@ services:
   # Nginx Service
   webserver:
     image: nginx:alpine
-    container_name: ${COMPOSE_PROJECT_NAME}-nginx
+    container_name: ${COMPOSE_PROJECT_NAME:-laravel}-nginx
     restart: unless-stopped
     tty: true
     ports:
-      - "${NGINX_PORT}:80"
-      - "${NGINX_SSL_PORT}:443"
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
     volumes:
       - ./:/var/www/html
       - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
@@ -38,7 +38,7 @@ services:
 
   # Mysql Service
   mysql:
-    container_name: ${COMPOSE_PROJECT_NAME}-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-laravel}-mysql
     image: mysql:${MYSQL_VERSION:-latest}
     restart: unless-stopped
     security_opt:
