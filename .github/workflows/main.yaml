@@ -5,7 +5,38 @@ on:
       - "master"
       - "feature/10.x"
 
+env:
+  AWS_REGION: ap-south-1
+
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout Repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Setup Docker Builder
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          ecr: false
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Push image to docker
+      - name: Build and push Docker images
+        run: |
+          docker-compose -f docker-compose-prod.yml build app
+          docker-compose -f docker-compose-prod.yml push app
+
   test:
     permissions:
       contents: read # for actions/checkout to fetch code
@@ -13,6 +44,7 @@ jobs:
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     runs-on: ubuntu-latest
     steps:
+      # Run scan on docker image
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
@@ -21,7 +53,37 @@ jobs:
           template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
+
+      # Upload report to GitHub Security
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build # Ensure the build job is completed before deploying
+  #   steps:
+  #     # Checkout Repository
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     # Install Python 3.9
+  #     - name: Install Python 3.9
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.9
+
+  #     # Install the EB CLI using pip
+  #     - name: Install EB CLI
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install awsebcli
+
+  #     # AWS login configure
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}

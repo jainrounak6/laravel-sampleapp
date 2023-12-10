@@ -64,9 +64,9 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html/
 
-RUN composer install
-RUN npm install
-RUN npm run build
+RUN composer install --no-dev && \
+    npm ci --no-dev && \
+    npm run build
 
 # EntryPoint
 ENTRYPOINT ["./docker/php/start.sh"]
