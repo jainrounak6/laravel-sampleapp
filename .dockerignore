@@ -25,6 +25,11 @@ docker-compose*
 !.env.example
 
 
-**/.DS_Store/**
+.DS_Store
 .dockerignore
 .editorconfig
+.devcontainer
+.git
+.gitattributes
+.gitignore
+.github

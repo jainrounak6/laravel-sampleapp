@@ -64,9 +64,10 @@ EXPOSE 9000
 WORKDIR /var/www/html
 
 COPY . /var/www/html/
-
+RUN chown -R ${USER}:www-data /var/www/html && \
+    chmod -R 775 /var/www/html
 RUN composer install --no-dev && \
-    npm ci && \
+    npm install && \
     npm run build
 
 # EntryPoint
